@@ -46,7 +46,7 @@ class Manager
      *  @param[in] event - Dump manager sd_event loop.
      */
     Manager(const EventPtr& event) :
-        eventLoop(event.get()),
+        eventLoop(std::move(event.get())),
         coreWatch(eventLoop, IN_NONBLOCK, coreFileEvent, EPOLLIN, CORE_FILE_DIR,
                   std::bind(std::mem_fn(
                                 &phosphor::dump::core::Manager::watchCallback),
@@ -54,6 +54,13 @@ class Manager
     {}
 
   private:
+    /** @brief Helper function for creating dump file
+     *         createDump D-Bus interface.
+     *  @param [in] directory - Coredump directory,
+                    prefix - Coredump filename prefix,
+                    timeoutSeconds - Waiting seconds for coredump file creation
+    */
+    void waitForFileCreation(const std::string& directory, const std::string& prefix, int timeoutSeconds);
     /** @brief Helper function for initiating dump request using
      *         createDump D-Bus interface.
      *  @param [in] files - Core files list
