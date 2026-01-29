@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# config: 1234 5
+# @brief: Collect Chassis state information.
+#
+
+. $DREPORT_INCLUDE/functions
+
+services=$(busctl list | awk '{print $1}' | grep -E "xyz.openbmc_project.State.Chassis([0-9]*)?$")
+for service in ${services}; do
+    objpath=$(busctl tree --list $service  | tail -n 1)
+    index=$(echo "$service" | grep -o '[0-9]*$')
+    if [ -z "$index" ]; then
+        file_name="chassis-state.log"
+        desc="Chassis State"
+    else
+        file_name="chassis${index}-state.log"
+        desc="Chassis${index} State"
+    fi
+    command="busctl get-property ${service} ${objpath} \
+              xyz.openbmc_project.State.Chassis CurrentPowerState"
+    add_cmd_output "$command" "$file_name" "$desc"
+done
