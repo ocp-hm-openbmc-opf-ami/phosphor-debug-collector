@@ -25,13 +25,21 @@ unit_files = []
 
 libsystemd = dependency('libsystemd', version: '>=221')
 
-sdbusplus_dep = dependency('sdbusplus')
+if (get_option('tests').enabled())
+        sdbusplus_dep = subproject('sdbusplus').get_variable('sdbusplus_dep')
+	meson.override_dependency('sdbusplus', sdbusplus_dep)
+	phosphor_dbus_interfaces_dep = dependency('phosphor-dbus-interfaces-ami')
+	phosphor_logging_dep = subproject('phosphor-logging').get_variable('phosphor_logging_dep')
+else
+        sdbusplus_dep = dependency('sdbusplus')
+	phosphor_dbus_interfaces_dep = dependency('phosphor-dbus-interfaces')
+	phosphor_logging_dep = dependency('phosphor-logging')
+
+endif
 sdbusplusplus_prog = find_program('sdbus++')
 sdbuspp_gen_meson_prog = find_program('sdbus++-gen-meson')
 sdeventplus_dep = dependency('sdeventplus')
 
-phosphor_dbus_interfaces_dep = dependency('phosphor-dbus-interfaces')
-phosphor_logging_dep = dependency('phosphor-logging')
 
 # nlohmann-json dependency
 nlohmann_json_dep = dependency('nlohmann_json', include_type: 'system')
